@@ -12,11 +12,28 @@ const marketplaceEth = new web3Eth.eth.Contract(
 
 let fromBlock = 0;
 web3Eth.eth.getBlockNumber().then((data) => {
-  fromBlock = data;
+  // fromBlock = data;
 
   marketplaceEth.events.MarketItemCreated(
       {fromBlock: fromBlock, step: 0}
   ).on('data', async event => {
+    console.log('\nMarket Item Created');
+
+    console.log("\nevent:");
+    console.log(event);
+
+    let message = event.returnValues[0] + " " + event.returnValues[1] + " " + event.returnValues[2] + " " + event.returnValues[3] + " " + event.returnValues[4] + " " + event.returnValues[5] + " " + event.returnValues[6];
+
+    let signatureObject = web3Eth.eth.accounts.sign(message, process.env.MARKETPLACE_VALIDATOR_PRIVATE_KEY);
+
+    console.log("\nsignature:");
+    console.log(signatureObject.signature);
+
+    let recovered = web3Eth.eth.accounts.recover(message, signatureObject.signature);
+
+    console.log("\nrecovered:");
+    console.log(recovered);
+
     // const { from, to, amount, date, nonce, signature } = event.returnValues;
     //
     // const tx = bridgeBsc.methods.mint(from, to, amount, nonce, signature);
@@ -33,13 +50,12 @@ web3Eth.eth.getBlockNumber().then((data) => {
     //   gasPrice
     // };
     // const receipt = await web3Bsc.eth.sendTransaction(txData);
-    console.log('Market Item Created');
   });
 
   marketplaceEth.events.MarketItemCancelled(
       {fromBlock: fromBlock, step: 0}
   ).on('data', async event => {
-    console.log('Market Item Cancelled');
+    console.log('\nMarket Item Cancelled');
   });
 
   console.log('Latest Block: ' + fromBlock);
