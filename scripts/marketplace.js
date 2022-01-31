@@ -1,4 +1,5 @@
 const Web3 = require('web3');
+const axios = require('axios');
 require('dotenv').config();
 
 const web3Eth = new Web3('wss://eth-rinkeby.alchemyapi.io/v2/LIs_rn4wGgjNHSGr9OV6ElmdpCqHDxJ2');
@@ -17,6 +18,8 @@ web3Eth.eth.getBlockNumber().then((data) => {
   marketplaceEth.events.MarketItemCreated(
       {fromBlock: fromBlock, step: 0}
   ).on('data', async event => {
+    console.log(event);
+
     console.log('\nMarket Item Created');
 
     console.log("\nevent:");
@@ -33,6 +36,17 @@ web3Eth.eth.getBlockNumber().then((data) => {
 
     console.log("\nrecovered:");
     console.log(recovered);
+
+    axios.post("https://ownly.tk/api/store-market-item", {
+      item_id: event.returnValues[0],
+      message: message,
+      signature: signatureObject.signature
+    }).then(data => {
+      console.log("\nstore-market-item:");
+      console.log(data);
+    }).catch(function(error) {
+      console.log(error)
+    });
 
     // const { from, to, amount, date, nonce, signature } = event.returnValues;
     //
