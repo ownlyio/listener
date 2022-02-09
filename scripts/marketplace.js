@@ -34,7 +34,7 @@ const marketplaceBsc = new web3Bsc.eth.Contract(
 
 let fromBlock = 0;
 web3Eth.eth.getBlockNumber().then((data) => {
-    // fromBlock = data;
+    fromBlock = data;
 
     marketplaceEth.events.MarketItemCreated(
         {fromBlock: fromBlock, step: 0}
