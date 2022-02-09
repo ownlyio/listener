@@ -1,8 +1,19 @@
 const Web3 = require('web3');
 const axios = require('axios');
 const fs = require('fs');
+const express = require('express')
+const app = express()
+const port = 8080
 
 require('dotenv').config();
+
+app.get('/', (req, res) => {
+    res.send('Hello World!')
+})
+
+app.listen(port, () => {
+    console.log(`Example app listening at http://localhost:${port}`)
+})
 
 const web3Eth = new Web3(process.env.RPC_URL_ETH);
 const web3Bsc = new Web3(process.env.RPC_URL_BSC);
@@ -50,7 +61,8 @@ web3Eth.eth.getBlockNumber().then((data) => {
                         console.log("\nverify:");
                         console.log(verify);
 
-                        axios.post("https://ownly.tk/api/store-market-item", {
+                        // axios.post("https://ownly.tk/api/store-market-item", {
+                        axios.post("http://ownly-api.test/api/store-market-item", {
                             chain_id: chain_id,
                             item_id: event.returnValues[0],
                             message_hash: messageHash,
