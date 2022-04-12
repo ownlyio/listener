@@ -1,25 +1,14 @@
 const Web3 = require('web3');
 const axios = require('axios');
 const fs = require('fs');
-const express = require('express')
-const app = express()
-const port = 8080
 
 require('dotenv').config();
 
-app.get('/', (req, res) => {
-    res.send('Hello World!')
-})
-
-app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`)
-})
-
-const web3Eth = new Web3(process.env.RPC_URL_ETH);
-const web3Bsc = new Web3(process.env.RPC_URL_BSC);
+const web3Eth = new Web3(process.env.WS_URL_ETH);
+const web3Bsc = new Web3(process.env.WS_URL_BSC);
 // const { address: admin } = web3Eth.eth.accounts.wallet.add(process.env.MARKETPLACE_VALIDATOR_PRIVATE_KEY);
 
-let marketplace_contract_abi_eth = JSON.parse(fs.readFileSync('json/marketplace_contract_abi_bsc.json'));
+let marketplace_contract_abi_eth = JSON.parse(fs.readFileSync('json/marketplace_contract_abi_eth.json'));
 let marketplace_contract_abi_bsc = JSON.parse(fs.readFileSync('json/marketplace_contract_abi_bsc.json'));
 
 const marketplaceEth = new web3Eth.eth.Contract(
@@ -34,11 +23,13 @@ const marketplaceBsc = new web3Bsc.eth.Contract(
 
 let fromBlock = 0;
 web3Eth.eth.getBlockNumber().then((data) => {
-    fromBlock = data;
+    // fromBlock = data;
 
     marketplaceEth.events.MarketItemCreated(
-        {fromBlock: fromBlock, step: 0}
-    ).on('data', async event => {
+        {fromBlock: 0, step: 0}
+    ).on('data', async function(event) {
+        console.log(event);
+
         let chain_id = 4;
 
         console.log('\nMarket Item Created');
@@ -67,7 +58,8 @@ web3Eth.eth.getBlockNumber().then((data) => {
                             item_id: event.returnValues[0],
                             message_hash: messageHash,
                             signature: signatureObject.signature,
-                            event: JSON.stringify(event)
+                            event: JSON.stringify(event),
+                            apiKey: process.env.OWNLY_API_KEY
                         }).then(data => {
                             console.log("\nstore-market-item:");
                             console.log(data.data);
@@ -77,8 +69,8 @@ web3Eth.eth.getBlockNumber().then((data) => {
                     });
             });
 
-        // const { from, to, amount, date, nonce, signature } = event.returnValues;
-        //
+        const { from, to, amount, date, nonce, signature } = event.returnValues;
+
         // const tx = bridgeBsc.methods.mint(from, to, amount, nonce, signature);
         // const [gasPrice, gasCost] = await Promise.all([
         //   web3Bsc.eth.getGasPrice(),
@@ -95,17 +87,30 @@ web3Eth.eth.getBlockNumber().then((data) => {
         // const receipt = await web3Bsc.eth.sendTransaction(txData);
     });
 
-    marketplaceEth.events.MarketItemPaidForOtherChain(
-        {fromBlock: fromBlock, step: 0}
-    ).on('data', async event => {
-
-    });
+    // marketplaceEth.events.MarketItemPaidForOtherChain(
+    //     {fromBlock: fromBlock, step: 0}
+    // ).on('data', async event => {
+    //
+    // });
 
     // marketplaceEth.events.MarketItemCancelled(
     //     {fromBlock: fromBlock, step: 0}
     // ).on('data', async event => {
     //   console.log('\nMarket Item Cancelled');
     // });
+
+    console.log('Latest Block: ' + fromBlock);
+    console.log('Running...');
+});
+
+web3Bsc.eth.getBlockNumber().then((data) => {
+    fromBlock = data;
+
+    marketplaceBsc.events.MarketItemPaidForOtherChain(
+        {fromBlock: fromBlock, step: 0}
+    ).on('data', async event => {
+        console.log(event);
+    });
 
     console.log('Latest Block: ' + fromBlock);
     console.log('Running...');

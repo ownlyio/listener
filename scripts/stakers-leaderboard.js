@@ -61,8 +61,6 @@ let getStakingData = function(address, staking_type, page) {
                         return 0;
                     }
 
-                    console.log(i + " - " + staking_type);
-
                     if(staking_type === "liquidity") {
                         stakingContract.methods.earned(earners[i]).call()
                             .then(function(earned) {
