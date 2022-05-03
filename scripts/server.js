@@ -33,6 +33,11 @@ app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
+app.get('/web3/getSigningAddress/:signature/:message', async (req, res) => {
+    let signing_address = await web3Bsc.eth.accounts.recover(req.params.message, req.params.signature);
+    res.send(signing_address);
+});
+
 app.get('/web3/bridge/getSignature/:chainId/:address', (req, res) => {
     if(req.params.chainId === "97") {
         mainBridge.methods.fetchBridgeItems(req.params.address).call()
